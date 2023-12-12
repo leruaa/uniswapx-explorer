@@ -1,0 +1,16 @@
+[package]
+name = "types"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+uniswapx = { path = "../../../uniswapx-rs" }
+stapifaction = { path = "../../../../stapifaction/stapifaction", features = [
+    "derive",
+] }
+erc20 = { git = "https://github.com/leruaa/erc20-rs" }
+primitive-types = "0.12"
+serde = { version = "1.0", features = ["derive"] }
+num-traits = "0.2"
