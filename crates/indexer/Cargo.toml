@@ -9,8 +9,10 @@ edition = "2021"
 types = { path = "../types" }
 defillama = { git = "https://github.com/leruaa/defillama-rs" }
 erc20 = { git = "https://github.com/leruaa/erc20-rs" }
+alloy-primitives = "0.5"
+alloy-providers = { git = "https://github.com/alloy-rs/alloy" }
+alloy-rpc-client = { git = "https://github.com/alloy-rs/alloy" }
 uniswapx = { path = "../../../uniswapx-rs" }
-ethers = { version = "2.0" }
 stapifaction = { path = "../../../../stapifaction/stapifaction", features = [
     "json",
 ] }

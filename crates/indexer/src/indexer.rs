@@ -1,14 +1,13 @@
 use std::sync::Arc;
 
+use alloy_primitives::Bytes;
+use alloy_providers::provider::Provider;
+use alloy_rpc_client::RpcClient;
 use anyhow::Result;
 use defillama::{Coin, CoinsClient};
 use erc20::{
     mainnet::{ETH, WETH},
     TokenId, TokenStore,
-};
-use ethers::{
-    providers::{Http, Provider},
-    types::Bytes,
 };
 use futures::StreamExt;
 use stapifaction::json::ToJsonIterable;
@@ -24,8 +23,12 @@ pub async fn start(eth_http_rpc: String) -> Result<()> {
     let cloned_token = token.clone();
     let mut orders = Vec::<Order>::new();
     let coins_client = CoinsClient::default();
-    let http_provider = Arc::new(Provider::<Http>::try_from(&eth_http_rpc)?);
-    let token_store = TokenStore::new(1, http_provider);
+    let http_provider = Provider::new_with_client(
+        RpcClient::builder()
+            .reqwest_http(eth_http_rpc.parse().unwrap())
+            .boxed(),
+    );
+    let token_store = TokenStore::new(1, Arc::new(http_provider));
 
     tokio::spawn(async move {
         let request = OrdersRequest {

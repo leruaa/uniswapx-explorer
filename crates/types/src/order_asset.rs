@@ -1,6 +1,6 @@
+use alloy_primitives::U256;
 use erc20::Token;
 use num_traits::cast::ToPrimitive;
-use primitive_types::U256;
 use serde::Serialize;
 use std::sync::Arc;
 
