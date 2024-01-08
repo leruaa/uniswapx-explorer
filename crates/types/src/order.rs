@@ -1,9 +1,10 @@
 use stapifaction::Persistable;
+use tsify::Tsify;
 use uniswapx::types::{OrderStatus, OrderType};
 
 use crate::{OrderAsset, OrderDetails};
 
-#[derive(Persistable, Debug)]
+#[derive(Debug, Persistable, Tsify)]
 #[persistable(path = "orders")]
 #[serde(rename_all = "camelCase")]
 pub struct Order {
@@ -21,5 +22,6 @@ pub struct Order {
     pub signature: String,
     pub tx: Option<String>,
     #[persistable(expand)]
+    #[serde(skip)]
     pub details: Option<OrderDetails>,
 }

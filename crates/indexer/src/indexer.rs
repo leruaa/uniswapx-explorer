@@ -124,11 +124,15 @@ async fn build_order(
     };
 
     let output_token_price = coins_client
-        .current_prices(&[output_coin.clone()])
+        .historical_prices(uniswapx_order.created_at, &[output_coin.clone()])
         .await?
         .get(&output_coin)
         .unwrap()
         .price;
+
+    let settled = uniswapx_order
+        .settled_amounts
+        .and_then(|amounts| amounts.first().cloned());
 
     let order = Order {
         hash: uniswapx_order.order_hash.clone(),
@@ -140,8 +144,9 @@ async fn build_order(
             &input_token,
             uniswapx_order.input.start_amount,
             uniswapx_order.input.end_amount,
+            settled.clone().and_then(|s| s.amount_in),
             coins_client
-                .current_prices(&[input_coin.clone()])
+                .historical_prices(uniswapx_order.created_at, &[input_coin.clone()])
                 .await?
                 .get(&input_coin)
                 .unwrap()
@@ -151,6 +156,7 @@ async fn build_order(
             &output_token,
             output.start_amount,
             output.end_amount,
+            settled.map(|s| s.amount_out),
             output_token_price,
         ),
         fee: fee.map(|f| {
@@ -158,6 +164,7 @@ async fn build_order(
                 &output_token,
                 f.start_amount,
                 f.end_amount,
+                None,
                 output_token_price,
             )
         }),

@@ -1,6 +1,7 @@
 use stapifaction::Persistable;
+use tsify::Tsify;
 
-#[derive(Debug, Persistable)]
+#[derive(Debug, Persistable, Tsify)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderDetails {
     pub decay_start_time: u64,

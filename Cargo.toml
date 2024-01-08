@@ -5,3 +5,8 @@ members = ["indexer-cli", "crates/*"]
 
 [patch.'https://github.com/leruaa/erc20-rs']
 erc20 = { path = "../erc20-rs" }
+
+
+[workspace.dependencies]
+tsify = { version = "0.4.5", default-features = false }
+uniswapx = { git = "https://github.com/leruaa/uniswapx-rs" }

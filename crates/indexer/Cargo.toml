@@ -12,10 +12,11 @@ erc20 = { git = "https://github.com/leruaa/erc20-rs" }
 alloy-primitives = "0.5"
 alloy-providers = { git = "https://github.com/alloy-rs/alloy" }
 alloy-rpc-client = { git = "https://github.com/alloy-rs/alloy" }
-uniswapx = { path = "../../../uniswapx-rs" }
+uniswapx = { workspace = true }
 stapifaction = { path = "../../../../stapifaction/stapifaction", features = [
     "json",
 ] }
+tsify = { workspace = true }
 tokio = { version = "1", features = ["full"] }
 tokio-util = "0.7"
 futures = "0.3"
