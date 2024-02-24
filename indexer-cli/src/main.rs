@@ -7,7 +7,6 @@ use tracing_subscriber::{
 
 mod cli;
 
-
 // 0x6880c8341a8e00e9c0b4a4fd2a2934980cd0851d2fc5a86d3ed09c55fd380912
 // eyJjaGFpbklkIjoxLCJjcmVhdGVkQXQiOjE2NzkyNDA0MzksIm9yZGVySGFzaCI6IjB4Njg4MGM4MzQxYThlMDBlOWMwYjRhNGZkMmEyOTM0OTgwY2QwODUxZDJmYzVhODZkM2VkMDljNTVmZDM4MDkxMiJ9
 
@@ -28,5 +27,5 @@ async fn main() {
 
     tracing_subscriber::registry().with(stdout_log).init();
 
-    indexer::start(cli.eth_http_rpc).await.unwrap();
+    indexer::start(cli.http_rpc).await.unwrap();
 }

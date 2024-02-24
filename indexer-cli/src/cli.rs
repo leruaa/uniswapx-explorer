@@ -5,5 +5,5 @@ use clap::Parser;
 #[command(propagate_version = true)]
 pub struct Cli {
     #[arg(long, env)]
-    pub eth_http_rpc: String,
+    pub http_rpc: String,
 }
