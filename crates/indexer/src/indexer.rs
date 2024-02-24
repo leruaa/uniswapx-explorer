@@ -128,7 +128,10 @@ async fn build_order(
         .historical_prices(uniswapx_order.created_at, &[output_coin.clone()])
         .await?
         .get(&output_coin)
-        .unwrap()
+        .ok_or(anyhow!(
+            "Failed to get historical price for output: {}",
+            &output_coin
+        ))?
         .price;
 
     let settled = uniswapx_order
@@ -136,7 +139,7 @@ async fn build_order(
         .and_then(|amounts| amounts.first().cloned());
 
     let order = Order {
-        hash: uniswapx_order.order_hash.clone(),
+        hash: format!("{:?}", uniswapx_order.order_hash),
         chain_id: uniswapx_order.chain_id,
         ty: uniswapx_order.order_type.clone(),
         created_at: uniswapx_order.created_at,
@@ -150,7 +153,10 @@ async fn build_order(
                 .historical_prices(uniswapx_order.created_at, &[input_coin.clone()])
                 .await?
                 .get(&input_coin)
-                .unwrap()
+                .ok_or(anyhow!(
+                    "Failed to get historical price for input: {}",
+                    &input_coin
+                ))?
                 .price,
         ),
         output: OrderAsset::new(
