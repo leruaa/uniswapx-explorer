@@ -82,13 +82,14 @@ async fn build_order(
     uniswapx_order: uniswapx::types::Order,
     coins_client: &CoinsClient,
     token_store: &TokenStore,
+    chain: Chain,
 ) -> Result<Order> {
     let encoded_order = uniswapx_order.encoded_order.to_string();
     let decoded_order = decode_order(&encoded_order).ok();
     let (input_token, input_coin) = if uniswapx_order.input.token.is_zero() {
         (
             Arc::new(ETH.clone()),
-            Coin::Address(1_u64.try_into().unwrap(), WETH.address.0.into()),
+            Coin::Address(chain.clone(), WETH.address.0.into()),
         )
     } else {
         let input_token = token_store
@@ -96,7 +97,7 @@ async fn build_order(
             .await?;
         (
             input_token.clone(),
-            Coin::Address(1_u64.try_into().unwrap(), input_token.address.0.into()),
+            Coin::Address(chain.clone(), input_token.address.0.into()),
         )
     };
 
@@ -113,13 +114,13 @@ async fn build_order(
     let (output_token, output_coin) = if output.token.is_zero() {
         (
             Arc::new(ETH.clone()),
-            Coin::Address(1_u64.try_into().unwrap(), WETH.address.0.into()),
+            Coin::Address(chain.clone(), WETH.address.0.into()),
         )
     } else {
         let output_token = token_store.get(TokenId::Address(output.token)).await?;
         (
             output_token.clone(),
-            Coin::Address(1_u64.try_into().unwrap(), output_token.address.0.into()),
+            Coin::Address(chain, output_token.address.0.into()),
         )
     };
 
