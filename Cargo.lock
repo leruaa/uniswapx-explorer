@@ -1213,7 +1213,7 @@ checksum = "7e962a19be5cfc3f3bf6dd8f61eb50107f356ad6270fbb3ed41476571db78be5"
 [[package]]
 name = "defillama"
 version = "0.1.0"
-source = "git+https://github.com/leruaa/defillama-rs#4d4150b6c8442b37c231a1526a530de45ef0ff9d"
+source = "git+https://github.com/leruaa/defillama-rs#73ac36d760a6825fd6eeb71068bd558c1b69b4fa"
 dependencies = [
  "alloy-primitives 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "anyhow",
