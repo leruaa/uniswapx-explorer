@@ -1,13 +1,16 @@
 use std::sync::Arc;
 
-use alloy_primitives::Bytes;
-use alloy_providers::provider::Provider;
+use alloy_network::{Ethereum, Network};
+use alloy_provider::ProviderBuilder;
 use alloy_rpc_client::RpcClient;
-use anyhow::Result;
-use defillama::{Coin, CoinsClient};
+use alloy_transport::Transport;
+use anyhow::{anyhow, Result};
+use defillama::{Chain, Coin, CoinsClient};
 use erc20::{
+    clients::{CachableTokenClient, TokenClient},
     mainnet::{ETH, WETH},
-    TokenId, TokenStore,
+    stores::BasicTokenStore,
+    TokenId,
 };
 use futures::StreamExt;
 use stapifaction::json::ToJsonIterable;
@@ -15,7 +18,10 @@ use tokio::{select, signal, sync::mpsc};
 use tokio_util::sync::CancellationToken;
 use tracing::{error, info};
 use types::{Order, OrderAsset, OrderDetails};
-use uniswapx::{decode_order, orders_stream, types::OrdersRequest};
+use uniswapx::{
+    decode_order, orders_stream,
+    types::{OrderStatus, OrdersRequest},
+};
 
 pub async fn start(eth_http_rpc: String) -> Result<()> {
     let (shutdown_handle, mut shutdown_complete) = mpsc::channel(1);
@@ -23,19 +29,32 @@ pub async fn start(eth_http_rpc: String) -> Result<()> {
     let cloned_token = token.clone();
     let mut orders = Vec::<Order>::new();
     let coins_client = CoinsClient::default();
-    let http_provider = Provider::new_with_client(
+    let http_provider = ProviderBuilder::<_, Ethereum>::new().on_client(
         RpcClient::builder()
             .reqwest_http(eth_http_rpc.parse().unwrap())
             .boxed(),
     );
-    let token_store = TokenStore::new(1, Arc::new(http_provider));
+    let token_client = CachableTokenClient::new(
+        TokenClient::new(Arc::new(http_provider)),
+        1,
+        BasicTokenStore::new(),
+    );
 
     tokio::spawn(async move {
+        /*
         let request = OrdersRequest {
             chain_id: Some(1),
             cursor: Some(String::from("eyJjaGFpbklkIjoxLCJjcmVhdGVkQXQiOjE2OTA0NDM2NDcsIm9yZGVySGFzaCI6IjB4MDUzQUNGMjkxNjFENDQwRjgzNDM0Mzg0QTQ0NzIwRUNFNzg1MzExMzgyQzI3MEJERjExMjkwRTM1ODFFMDQ1QyJ9")),
             ..Default::default()
+        };*/
+
+        let request = OrdersRequest {
+            chain_id: Some(137),
+            order_status: Some(OrderStatus::Filled),
+            ..Default::default()
         };
+
+        let mut timestamp = 0;
 
         let mut orders_stream =
             orders_stream(String::from("https://api.uniswap.org/v2/orders"), request).boxed();
@@ -45,8 +64,14 @@ pub async fn start(eth_http_rpc: String) -> Result<()> {
                 Some(order) = orders_stream.next() => {
                     match order {
                         Ok(order) => {
-                            info!("Adding order {}", order.order_hash);
-                            match build_order(order, &coins_client, &token_store).await {
+                            if order.created_at < timestamp {
+                                panic!("STOP");
+                            }
+
+                            timestamp = order.created_at;
+
+                            info!("Adding order {}, {timestamp}", order.order_hash);
+                            match build_order(order, &coins_client, &token_client, Chain::Polygon).await {
                                 Ok(order) => orders.push(order),
                                 Err(err) => error!("Failed to build order: {err:#}"),
                             }
@@ -78,12 +103,16 @@ pub async fn start(eth_http_rpc: String) -> Result<()> {
     Ok(())
 }
 
-async fn build_order(
+async fn build_order<N, T>(
     uniswapx_order: uniswapx::types::Order,
     coins_client: &CoinsClient,
-    token_store: &TokenStore,
+    token_client: &CachableTokenClient<N, T>,
     chain: Chain,
-) -> Result<Order> {
+) -> Result<Order>
+where
+    N: Network + Clone + Copy,
+    T: Transport + Clone,
+{
     let encoded_order = uniswapx_order.encoded_order.to_string();
     let decoded_order = decode_order(&encoded_order).ok();
     let (input_token, input_coin) = if uniswapx_order.input.token.is_zero() {
@@ -92,8 +121,8 @@ async fn build_order(
             Coin::Address(chain.clone(), WETH.address.0.into()),
         )
     } else {
-        let input_token = token_store
-            .get(TokenId::Address(uniswapx_order.input.token))
+        let input_token = token_client
+            .retrieve_token(TokenId::Address(uniswapx_order.input.token))
             .await?;
         (
             input_token.clone(),
@@ -117,7 +146,9 @@ async fn build_order(
             Coin::Address(chain.clone(), WETH.address.0.into()),
         )
     } else {
-        let output_token = token_store.get(TokenId::Address(output.token)).await?;
+        let output_token = token_client
+            .retrieve_token(TokenId::Address(output.token))
+            .await?;
         (
             output_token.clone(),
             Coin::Address(chain, output_token.address.0.into()),
@@ -191,8 +222,7 @@ async fn build_order(
                 "{:?}",
                 decoded_order.info.additionalValidationContract
             ),
-            additional_validation_data: Bytes::from(decoded_order.info.additionalValidationData)
-                .to_string(),
+            additional_validation_data: decoded_order.info.additionalValidationData.to_string(),
         }),
     };
 
