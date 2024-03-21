@@ -1,9 +1,11 @@
 use std::sync::Arc;
 
-use alloy_network::{Ethereum, Network};
-use alloy_provider::ProviderBuilder;
-use alloy_rpc_client::RpcClient;
-use alloy_transport::Transport;
+use alloy::{
+    network::{Ethereum, Network},
+    providers::ProviderBuilder,
+    rpc::client::RpcClient,
+    transports::Transport,
+};
 use anyhow::{anyhow, Result};
 use defillama::{Chain, Coin, CoinsClient};
 use erc20::{
@@ -110,7 +112,7 @@ async fn build_order<N, T>(
     chain: Chain,
 ) -> Result<Order>
 where
-    N: Network + Clone + Copy,
+    N: Network + Clone,
     T: Transport + Clone,
 {
     let encoded_order = uniswapx_order.encoded_order.to_string();

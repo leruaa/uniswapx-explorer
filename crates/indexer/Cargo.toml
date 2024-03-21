@@ -10,10 +10,13 @@ types = { path = "../types" }
 defillama = { git = "https://github.com/leruaa/defillama-rs" }
 erc20 = { workspace = true }
 alloy-primitives = { workspace = true }
-alloy-network = { git = "https://github.com/alloy-rs/alloy" }
-alloy-transport = { git = "https://github.com/alloy-rs/alloy" }
-alloy-provider = { git = "https://github.com/alloy-rs/alloy" }
-alloy-rpc-client = { git = "https://github.com/alloy-rs/alloy" }
+alloy = { workspace = true, features = [
+    "network",
+    "transports",
+    "providers",
+    "rpc",
+    "rpc-client",
+] }
 uniswapx = { workspace = true }
 stapifaction = { path = "../../../../stapifaction/stapifaction", features = [
     "json",

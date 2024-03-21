@@ -2478,11 +2478,8 @@ checksum = "ce23b50ad8242c51a442f3ff322d56b02f08852c77e4c0b4d3fd684abc89c683"
 name = "indexer"
 version = "0.1.0"
 dependencies = [
- "alloy-network",
+ "alloy",
  "alloy-primitives 0.6.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "alloy-provider",
- "alloy-rpc-client",
- "alloy-transport",
  "anyhow",
  "defillama",
  "erc20",
