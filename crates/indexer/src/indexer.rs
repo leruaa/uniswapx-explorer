@@ -51,7 +51,7 @@ pub async fn start(eth_http_rpc: String) -> Result<()> {
         };*/
 
         let request = OrdersRequest {
-            chain_id: Some(137),
+            chain_id: Some(1),
             order_status: Some(OrderStatus::Filled),
             ..Default::default()
         };
@@ -73,7 +73,7 @@ pub async fn start(eth_http_rpc: String) -> Result<()> {
                             timestamp = order.created_at;
 
                             info!("Adding order {}, {timestamp}", order.order_hash);
-                            match build_order(order, &coins_client, &token_client, Chain::Polygon).await {
+                            match build_order(order, &coins_client, &token_client, Chain::Ethereum).await {
                                 Ok(order) => orders.push(order),
                                 Err(err) => error!("Failed to build order: {err:#}"),
                             }
